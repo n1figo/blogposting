@@ -5,26 +5,30 @@ import numpy as np
 import datetime
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.chrome.service import Service as ChromeService
+from webdriver_manager.chrome import ChromeDriverManager
 
 # Define paths for files
-excel_file_path = "/path/to/downloaded/excel_file.xlsx"
-csv_file_path = "/path/to/converted/csv_file.csv"
-template_file_path = "/path/to/게시글템플릿.txt"
-video_links_file_path = "/path/to/룸투어링크.txt"
+excel_file_path = "downloaded_excel_file.xlsx"
+csv_file_path = "converted_csv_file.csv"
+template_file_path = "게시글템플릿.txt"
+video_links_file_path = "룸투어링크.txt"
 
 # Step 1: Automate the download process using Selenium
 def download_excel_file(download_url):
     # Set up Chrome options
     chrome_options = webdriver.ChromeOptions()
-    prefs = {"download.default_directory": os.path.dirname(excel_file_path)}
+    prefs = {"download.default_directory": os.path.dirname(os.path.abspath(excel_file_path))}
     chrome_options.add_experimental_option("prefs", prefs)
 
     # Initialize the Chrome driver
-    driver = webdriver.Chrome(options=chrome_options)
+    driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=chrome_options)
 
     # Navigate to the URL and download the file
     driver.get(download_url)
+    time.sleep(5)  # Wait for the page to load
+
+    # Find the download link by its XPath and click it
     download_link = driver.find_element(By.XPATH, "/html/body/div/span[3]/div/div[2]/div[3]/div/div/div[2]/div/div/div/a[8]")
     download_link.click()
 
@@ -104,5 +108,5 @@ def main(download_url, template_file_path, video_links_file_path):
     print(content)
 
 # Example usage
-download_url = "your_download_url_here"  # Replace with the actual URL
+download_url = "https://www.zipsa.net/z/lessor/index#!/tenant/tenantManage"
 main(download_url, template_file_path, video_links_file_path)
