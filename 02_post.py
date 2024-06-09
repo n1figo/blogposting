@@ -45,7 +45,11 @@ def download_excel_file_with_selenium(login_url, username, password):
     login_button.click()
     time.sleep(5)  # Wait for the login to complete
     print('로그인성공')
-    
+
+    # Get the HTML source of the new page
+    page_source = driver.page_source
+    with open("page_source.html", "w", encoding="utf-8") as file:
+        file.write(page_source)
 
     # Navigate to the tenant category
     tenant_category_button = driver.find_element(By.XPATH, "/html/body/div/span[1]/div[2]/ul/li[3]/a/span")
