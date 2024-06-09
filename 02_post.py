@@ -37,8 +37,8 @@ def download_excel_file_with_selenium(login_url, username, password):
     driver.get(login_url)
     
     # Find the username and password fields and input the provided credentials
-    driver.find_element(By.NAME, "user_id").send_keys(username)
-    driver.find_element(By.NAME, "user_pass").send_keys(password)
+    driver.find_element(By.XPATH, "/html/body/div/div/form/ul/li[1]/input[2]").send_keys(username)
+    driver.find_element(By.XPATH, "/html/body/div/div/form/ul/li[2]/input").send_keys(password)
     
     # Submit the login form
     login_button = driver.find_element(By.XPATH, "/html/body/div/div/form/ul/li[4]/a")
@@ -133,5 +133,5 @@ def main(login_url, template_file_path, video_links_file_path):
     print(content)
 
 # Example usage
-login_url = "https://www.zipsa.net/z/lessor/index#!/tenant/tenantManage"  # Update this to the actual login URL that directs to the login page and then the tenant management page
+login_url = "https://www.zipsa.net/u/login"  # Update this to the actual login URL that directs to the login page and then the tenant management page
 main(login_url, template_file_path, video_links_file_path)
