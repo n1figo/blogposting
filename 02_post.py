@@ -21,7 +21,7 @@ template_file_path = "게시글템플릿.txt"
 video_links_file_path = "룸투어링크.txt"
 
 # Step 1: Automate the login and download process using Selenium
-def download_excel_file_with_selenium(login_url, download_url, username, password):
+def download_excel_file_with_selenium(login_url, username, password):
     # Set up Chrome options
     chrome_options = webdriver.ChromeOptions()
     prefs = {"download.default_directory": download_dir}
@@ -44,20 +44,17 @@ def download_excel_file_with_selenium(login_url, download_url, username, passwor
     login_button = driver.find_element(By.XPATH, "/html/body/div/div/form/ul/li[4]/a")
     login_button.click()
     time.sleep(5)  # Wait for the login to complete
-    print('로그인성공')
 
     # Navigate to the tenant category
     tenant_category_button = driver.find_element(By.XPATH, "/html/body/div/span[1]/div[2]/ul/li[3]/a/span")
     tenant_category_button.click()
     time.sleep(5)  # Wait for the page to load
-    print('세입자 카테고리클릭')
 
     # Wait for the download link to be clickable and click it
     wait = WebDriverWait(driver, 20)
     download_link = wait.until(EC.element_to_be_clickable((By.XPATH, "/html/body/div/span[3]/div/div[2]/div[3]/div/div/div[2]/div/div/div/a[8]")))
     download_link.click()
     time.sleep(10)  # Wait for the file to download
-    print('엑셀 다운로드 완료')
 
     driver.quit()
 
@@ -117,13 +114,13 @@ def process_accommodation_data(csv_file_path, template_file_path, video_links_fi
     return blog_title, formatted_template
 
 # Step 4: Main function to execute the steps
-def main(login_url, download_url, template_file_path, video_links_file_path):
+def main(login_url, template_file_path, video_links_file_path):
     # Get username and password input from the user
     username = input("Enter your username: ")
     password = getpass.getpass("Enter your password: ")
     
     # Step 1: Login and download the Excel file
-    download_excel_file_with_selenium(login_url, download_url, username, password)
+    download_excel_file_with_selenium(login_url, username, password)
     
     # Step 2: Convert the Excel file to CSV
     convert_xlsx_to_csv(excel_file_path, csv_file_path)
@@ -136,6 +133,5 @@ def main(login_url, download_url, template_file_path, video_links_file_path):
     print(content)
 
 # Example usage
-login_url = "https://www.zipsa.net/u/login"  # Update this to the actual login URL
-download_url = "https://www.zipsa.net/z/lessor/index#!/tenant/tenantManage"
-main(login_url, download_url, template_file_path, video_links_file_path)
+login_url = "https://www.zipsa.net/z/lessor/index#!/tenant/tenantManage"  # Update this to the actual login URL that directs to the login page and then the tenant management page
+main(login_url, template_file_path, video_links_file_path)
