@@ -1,5 +1,4 @@
 import os
-import time
 import pandas as pd
 import numpy as np
 import datetime
@@ -12,19 +11,37 @@ csv_file_path = "converted_csv_file.csv"
 template_file_path = "게시글템플릿.txt"
 video_links_file_path = "룸투어링크.txt"
 
-# Step 1: Download the Excel file using requests and BeautifulSoup
-def download_excel_file(download_url):
+# Step 1: Login and download the Excel file using requests and BeautifulSoup
+def download_excel_file(login_url, download_url, username, password):
     session = requests.Session()
     
-    # Get the initial page to retrieve any necessary cookies or tokens
-    response = session.get(download_url)
+    # Get the initial login page to retrieve any necessary cookies or tokens
+    response = session.get(login_url)
     soup = BeautifulSoup(response.content, 'html.parser')
     
-    # Find the download link - adjust the selector as needed based on the actual HTML structure
-    download_link = soup.select_one('a[href*=".xlsx"]')['href']
+    # Find hidden input fields for CSRF tokens etc.
+    hidden_inputs = soup.find_all("input", type="hidden")
+    form_data = {input.get('name'): input.get('value') for input in hidden_inputs}
+    
+    # Add the username and password to the form data
+    form_data['user_id'] = username
+    form_data['user_pass'] = password
+    
+    # Post the login form
+    login_response = session.post(login_url, data=form_data)
+    login_response.raise_for_status()  # Ensure the login was successful
+    
+    # Access the download page
+    download_page_response = session.get(download_url)
+    download_page_response.raise_for_status()  # Ensure the download page was successfully loaded
+    download_soup = BeautifulSoup(download_page_response.content, 'html.parser')
+    
+    # Find the download link
+    download_link = download_soup.select_one('a[href*=".xlsx"]')['href']
     
     # Download the Excel file
     response = session.get(download_link)
+    response.raise_for_status()  # Ensure the file was successfully downloaded
     
     # Save the file
     with open(excel_file_path, 'wb') as file:
@@ -86,9 +103,9 @@ def process_accommodation_data(csv_file_path, template_file_path, video_links_fi
     return blog_title, formatted_template
 
 # Step 4: Main function to execute the steps
-def main(download_url, template_file_path, video_links_file_path):
-    # Step 1: Download the Excel file
-    download_excel_file(download_url)
+def main(login_url, download_url, username, password, template_file_path, video_links_file_path):
+    # Step 1: Login and download the Excel file
+    download_excel_file(login_url, download_url, username, password)
     
     # Step 2: Convert the Excel file to CSV
     convert_xlsx_to_csv(excel_file_path, csv_file_path)
@@ -101,5 +118,8 @@ def main(download_url, template_file_path, video_links_file_path):
     print(content)
 
 # Example usage
+login_url = "https://www.zipsa.net/u/login"  # Update this to the actual login URL
 download_url = "https://www.zipsa.net/z/lessor/index#!/tenant/tenantManage"
-main(download_url, template_file_path, video_links_file_path)
+username = "your_username"  # Replace with your username
+password = "your_password"  # Replace with your password
+main(login_url, download_url, username, password, template_file_path, video_links_file_path)
