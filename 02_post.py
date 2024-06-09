@@ -44,11 +44,13 @@ def download_excel_file_with_selenium(login_url, username, password):
     login_button = driver.find_element(By.XPATH, "/html/body/div/div/form/ul/li[4]/a")
     login_button.click()
     time.sleep(5)  # Wait for the login to complete
+    print('로그인성공')
 
     # Navigate to the tenant category
     tenant_category_button = driver.find_element(By.XPATH, "/html/body/div/span[1]/div[2]/ul/li[3]/a/span")
     tenant_category_button.click()
     time.sleep(5)  # Wait for the page to load
+    print('세입자카테고리')
 
     # Wait for the download link to be clickable and click it
     wait = WebDriverWait(driver, 20)
