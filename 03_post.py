@@ -45,6 +45,18 @@ def download_excel_file_with_selenium(login_url, username, password):
     login_button.click()
     time.sleep(5)  # Wait for the login to complete
 
+    # Close the popup if it exists
+    try:
+        popup_close_button = driver.find_element(By.XPATH, "/html/body/div/span[3]/div[1]/div[2]/div[2]/div[2]/a")
+        popup_close_button.click()
+        time.sleep(2)  # Wait for the popup to close
+    except:
+        pass  # Ignore if popup does not exist
+
+    # Navigate to the initial URL again to get the HTML source
+    driver.get(login_url)
+    time.sleep(5)  # Wait for the page to load
+
     # Get the HTML source of the new page
     page_source = driver.page_source
     with open("page_source.html", "w", encoding="utf-8") as file:
