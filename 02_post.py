@@ -1,56 +1,60 @@
 import os
+import time
 import pandas as pd
 import numpy as np
 import datetime
-import requests
-from bs4 import BeautifulSoup
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.chrome.service import Service as ChromeService
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from chromedriver_py import binary_path  # chromedriver-py 패키지 사용
+import getpass
 
 # Define paths for files
-excel_file_path = "downloaded_excel_file.xlsx"
-csv_file_path = "converted_csv_file.csv"
+download_dir = os.path.join(os.getcwd(), "downloads")
+os.makedirs(download_dir, exist_ok=True)
+excel_file_path = os.path.join(download_dir, "downloaded_excel_file.xlsx")
+csv_file_path = os.path.join(download_dir, "converted_csv_file.csv")
 template_file_path = "게시글템플릿.txt"
 video_links_file_path = "룸투어링크.txt"
 
-# Define the User-Agent for Chrome
-headers = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-}
+# Step 1: Automate the login and download process using Selenium
+def download_excel_file_with_selenium(login_url, download_url, username, password):
+    # Set up Chrome options
+    chrome_options = webdriver.ChromeOptions()
+    prefs = {"download.default_directory": download_dir}
+    chrome_options.add_experimental_option("prefs", prefs)
+    chrome_options.add_argument('--no-sandbox')
+    chrome_options.add_argument('--disable-dev-shm-usage')
+    chrome_options.add_argument('--headless')
 
-# Step 1: Login and download the Excel file using requests and BeautifulSoup
-def download_excel_file(login_url, download_url, username, password):
-    session = requests.Session()
+    # Initialize the Chrome driver
+    driver = webdriver.Chrome(service=ChromeService(binary_path), options=chrome_options)
+
+    # Navigate to the login page
+    driver.get(login_url)
     
-    # Get the initial login page to retrieve any necessary cookies or tokens
-    response = session.get(login_url, headers=headers)
-    soup = BeautifulSoup(response.content, 'html.parser')
+    # Find the username and password fields and input the provided credentials
+    driver.find_element(By.NAME, "user_id").send_keys(username)
+    driver.find_element(By.NAME, "user_pass").send_keys(password)
     
-    # Find hidden input fields for CSRF tokens etc.
-    hidden_inputs = soup.find_all("input", type="hidden")
-    form_data = {input.get('name'): input.get('value') for input in hidden_inputs}
-    
-    # Add the username and password to the form data
-    form_data['user_id'] = username
-    form_data['user_pass'] = password
-    
-    # Post the login form
-    login_response = session.post(login_url, data=form_data, headers=headers)
-    login_response.raise_for_status()  # Ensure the login was successful
-    
-    # Access the download page
-    download_page_response = session.get(download_url, headers=headers)
-    download_page_response.raise_for_status()  # Ensure the download page was successfully loaded
-    download_soup = BeautifulSoup(download_page_response.content, 'html.parser')
-    
-    # Find the download link
-    download_link = download_soup.select_one('a[href*=".xlsx"]')['href']
-    
-    # Download the Excel file
-    response = session.get(download_link, headers=headers)
-    response.raise_for_status()  # Ensure the file was successfully downloaded
-    
-    # Save the file
-    with open(excel_file_path, 'wb') as file:
-        file.write(response.content)
+    # Submit the login form
+    driver.find_element(By.NAME, "user_pass").send_keys(Keys.RETURN)
+    time.sleep(5)  # Wait for the login to complete
+
+    # Navigate to the download page
+    driver.get(download_url)
+    time.sleep(5)  # Wait for the page to load
+
+    # Wait for the download link to be clickable and click it
+    wait = WebDriverWait(driver, 20)
+    download_link = wait.until(EC.element_to_be_clickable((By.XPATH, "/html/body/div/span[3]/div/div[2]/div[3]/div/div/div[2]/div/div/div/a[8]")))
+    download_link.click()
+    time.sleep(10)  # Wait for the file to download
+
+    driver.quit()
 
 # Step 2: Convert the downloaded Excel file to CSV
 def convert_xlsx_to_csv(excel_file_path, csv_file_path):
@@ -108,9 +112,13 @@ def process_accommodation_data(csv_file_path, template_file_path, video_links_fi
     return blog_title, formatted_template
 
 # Step 4: Main function to execute the steps
-def main(login_url, download_url, username, password, template_file_path, video_links_file_path):
+def main(login_url, download_url, template_file_path, video_links_file_path):
+    # Get username and password input from the user
+    username = input("Enter your username: ")
+    password = getpass.getpass("Enter your password: ")
+    
     # Step 1: Login and download the Excel file
-    download_excel_file(login_url, download_url, username, password)
+    download_excel_file_with_selenium(login_url, download_url, username, password)
     
     # Step 2: Convert the Excel file to CSV
     convert_xlsx_to_csv(excel_file_path, csv_file_path)
@@ -125,6 +133,4 @@ def main(login_url, download_url, username, password, template_file_path, video_
 # Example usage
 login_url = "https://www.zipsa.net/u/login"  # Update this to the actual login URL
 download_url = "https://www.zipsa.net/z/lessor/index#!/tenant/tenantManage"
-username = "your_username"  # Replace with your username
-password = "your_password"  # Replace with your password
-main(login_url, download_url, username, password, template_file_path, video_links_file_path)
+main(login_url, download_url, template_file_path, video_links_file_path)
