@@ -44,17 +44,20 @@ def download_excel_file_with_selenium(login_url, download_url, username, passwor
     login_button = driver.find_element(By.XPATH, "/html/body/div/div/form/ul/li[4]/a")
     login_button.click()
     time.sleep(5)  # Wait for the login to complete
+    print('로그인성공')
 
     # Navigate to the tenant category
     tenant_category_button = driver.find_element(By.XPATH, "/html/body/div/span[1]/div[2]/ul/li[3]/a/span")
     tenant_category_button.click()
     time.sleep(5)  # Wait for the page to load
+    print('세입자 카테고리클릭')
 
     # Wait for the download link to be clickable and click it
     wait = WebDriverWait(driver, 20)
     download_link = wait.until(EC.element_to_be_clickable((By.XPATH, "/html/body/div/span[3]/div/div[2]/div[3]/div/div/div[2]/div/div/div/a[8]")))
     download_link.click()
     time.sleep(10)  # Wait for the file to download
+    print('엑셀 다운로드 완료')
 
     driver.quit()
 
