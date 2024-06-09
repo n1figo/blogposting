@@ -11,12 +11,17 @@ csv_file_path = "converted_csv_file.csv"
 template_file_path = "게시글템플릿.txt"
 video_links_file_path = "룸투어링크.txt"
 
+# Define the User-Agent for Chrome
+headers = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+}
+
 # Step 1: Login and download the Excel file using requests and BeautifulSoup
 def download_excel_file(login_url, download_url, username, password):
     session = requests.Session()
     
     # Get the initial login page to retrieve any necessary cookies or tokens
-    response = session.get(login_url)
+    response = session.get(login_url, headers=headers)
     soup = BeautifulSoup(response.content, 'html.parser')
     
     # Find hidden input fields for CSRF tokens etc.
@@ -28,11 +33,11 @@ def download_excel_file(login_url, download_url, username, password):
     form_data['user_pass'] = password
     
     # Post the login form
-    login_response = session.post(login_url, data=form_data)
+    login_response = session.post(login_url, data=form_data, headers=headers)
     login_response.raise_for_status()  # Ensure the login was successful
     
     # Access the download page
-    download_page_response = session.get(download_url)
+    download_page_response = session.get(download_url, headers=headers)
     download_page_response.raise_for_status()  # Ensure the download page was successfully loaded
     download_soup = BeautifulSoup(download_page_response.content, 'html.parser')
     
@@ -40,7 +45,7 @@ def download_excel_file(login_url, download_url, username, password):
     download_link = download_soup.select_one('a[href*=".xlsx"]')['href']
     
     # Download the Excel file
-    response = session.get(download_link)
+    response = session.get(download_link, headers=headers)
     response.raise_for_status()  # Ensure the file was successfully downloaded
     
     # Save the file
