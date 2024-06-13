@@ -53,8 +53,8 @@ def download_excel_file_with_selenium(login_url, username, password):
     except:
         pass  # Ignore if popup does not exist
 
-    # Navigate to the initial URL again to get the HTML source
-    driver.get(login_url)
+    # Navigate to the tenant category
+    driver.get("https://www.zipsa.net/z/lessor/index#!/tenant/tenantManage")
     time.sleep(5)  # Wait for the page to load
 
     # Get the HTML source of the new page
@@ -62,11 +62,6 @@ def download_excel_file_with_selenium(login_url, username, password):
     with open("page_source.html", "w", encoding="utf-8") as file:
         file.write(page_source)
     
-    # Navigate to the tenant category
-    tenant_category_button = driver.find_element(By.XPATH, "/html/body/div/span[1]/div[2]/ul/li[3]/a/span")
-    tenant_category_button.click()
-    time.sleep(5)  # Wait for the page to load
-
     # Wait for the download link to be clickable and click it
     wait = WebDriverWait(driver, 20)
     download_link = wait.until(EC.element_to_be_clickable((By.XPATH, "/html/body/div/span[3]/div/div[2]/div[3]/div/div/div[2]/div/div/div/a[8]")))
