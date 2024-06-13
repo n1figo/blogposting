@@ -70,9 +70,9 @@ def save_blog_post(title, content, output_path):
         file.write(f"{title}\n\n{content}")
 
 # Example usage
-excel_file_path = "path_to_your_github_file/현황2.xlsx"
-template_file_path = "path_to_your_template_file/게시글템플릿.txt"
-video_links_file_path = "path_to_your_video_links_file/룸투어링크.txt"
+excel_file_path = "./현황2.xlsx"
+template_file_path = "./게시글템플릿.txt"
+video_links_file_path = "./룸투어링크.txt"
 output_file_path = "output_blog_post.txt"
 
 # Step-by-step execution
