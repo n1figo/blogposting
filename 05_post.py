@@ -18,7 +18,7 @@ def read_and_filter_excel(file_path):
     
     # Convert non-business days to the next business day
     df_filtered.loc[:, '만료일'] = df_filtered['만료일'].apply(lambda x: np.busday_offset(np.datetime64(x, 'D'), 0, roll='forward'))
-    df_filtered.to_csv('filtered_data.csv', index=False)
+    # df_filtered.to_csv('filtered_data.csv', index=False)
 
     # Calculate booking available date
     df_filtered.loc[:, 'Available Booking Date'] = df_filtered['만료일'].apply(lambda x: np.busday_offset(np.datetime64(x, 'D'), 4))
@@ -32,14 +32,15 @@ def generate_blog_content(df, template_path, video_links_path):
 
     # Read video links
     with open(video_links_path, 'r', encoding='utf-8') as file:
-        video_links_content = file.read().split('\n')
+        video_links_content = file.readlines()
         video_links = {}
         for line in video_links_content:
-            if '*' in line:
-                parts = line.split()
-                room_number = parts[0].strip('*')
-                video_link = parts[1]
-                video_links[room_number] = video_link
+            if line.strip() and '*' in line:
+                room_number, video_link = line.split('*', 1)
+                room_number = room_number.strip()
+                video_link = video_link.strip()
+                if video_link and video_link != '-':
+                    video_links[room_number] = video_link
 
     # Get current year and next month
     now = datetime.datetime.now()
