@@ -12,13 +12,14 @@ def read_and_filter_excel(file_path):
 
     # Get current date and calculate previous, current, and next month
     now = datetime.datetime.now()
+    this_year = now.year
     this_month = now.month
     next_month = (now.month % 12) + 1
     previous_month = now.month - 1 if now.month > 1 else 12
 
-    # Filter data for rooms with contract end dates this month, next month, or last month
+    # Filter data for rooms with contract end dates this year and this month, next month, or last month
     df['만료일'] = pd.to_datetime(df['만료일'], errors='coerce')
-    df_filtered = df[df['만료일'].dt.month.isin([previous_month, this_month, next_month])]
+    df_filtered = df[(df['만료일'].dt.year == this_year) & (df['만료일'].dt.month.isin([previous_month, this_month, next_month]))]
 
     # Convert non-business days to the next business day
     df_filtered.loc[:, '만료일'] = df_filtered['만료일'].apply(lambda x: np.busday_offset(np.datetime64(x, 'D'), 0, roll='forward'))
