@@ -15,9 +15,13 @@ def read_and_filter_excel(file_path):
     # Filter data for rooms with contract end dates this month, next month, or last month
     df['만료일'] = pd.to_datetime(df['만료일'], errors='coerce')
     df_filtered = df[df['만료일'].dt.month.isin([previous_month, this_month, next_month])]
+    
+    # Convert non-business days to the next business day
+    df_filtered.loc[:, '만료일'] = df_filtered['만료일'].apply(lambda x: np.busday_offset(np.datetime64(x, 'D'), 0, roll='forward'))
+    df_filtered.to_csv('filtered_data.csv', index=False)
 
     # Calculate booking available date
-    df_filtered['Available Booking Date'] = df_filtered['만료일'].apply(lambda x: np.busday_offset(x, 4))
+    df_filtered.loc[:, 'Available Booking Date'] = df_filtered['만료일'].apply(lambda x: np.busday_offset(np.datetime64(x, 'D'), 4))
     
     return df_filtered
 
@@ -74,6 +78,7 @@ excel_file_path = "./현황2.xlsx"
 template_file_path = "./게시글템플릿.txt"
 video_links_file_path = "./룸투어링크.txt"
 output_file_path = "output_blog_post.txt"
+
 
 # Step-by-step execution
 filtered_data = read_and_filter_excel(excel_file_path)
