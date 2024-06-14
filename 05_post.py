@@ -2,6 +2,10 @@ import pandas as pd
 import numpy as np
 import datetime
 
+import pandas as pd
+import numpy as np
+import datetime
+
 def read_and_filter_excel(file_path):
     # Load the Excel file
     df = pd.read_excel(file_path, engine='openpyxl')
@@ -11,19 +15,23 @@ def read_and_filter_excel(file_path):
     this_month = now.month
     next_month = (now.month % 12) + 1
     previous_month = now.month - 1 if now.month > 1 else 12
-    
+
     # Filter data for rooms with contract end dates this month, next month, or last month
     df['만료일'] = pd.to_datetime(df['만료일'], errors='coerce')
     df_filtered = df[df['만료일'].dt.month.isin([previous_month, this_month, next_month])]
-    
+
     # Convert non-business days to the next business day
     df_filtered.loc[:, '만료일'] = df_filtered['만료일'].apply(lambda x: np.busday_offset(np.datetime64(x, 'D'), 0, roll='forward'))
-    
+
     # Calculate booking available date
     df_filtered.loc[:, 'Available Booking Date'] = df_filtered['만료일'].apply(lambda x: np.busday_offset(np.datetime64(x, 'D'), 4))
-    df_filtered.to_csv('filtered_data.csv', index=False)
-    
+
+    # Filter the data further to include only contract end dates in the previous, current, and next month
+    df_filtered = df_filtered[df_filtered['만료일'].dt.month.isin([previous_month, this_month, next_month])]
+
     return df_filtered
+
+# 나머지 코드는 동일합니다...
 
 def generate_blog_content(df, template_path, video_links_path):
     # Read template
