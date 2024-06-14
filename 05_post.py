@@ -18,10 +18,10 @@ def read_and_filter_excel(file_path):
     
     # Convert non-business days to the next business day
     df_filtered.loc[:, '만료일'] = df_filtered['만료일'].apply(lambda x: np.busday_offset(np.datetime64(x, 'D'), 0, roll='forward'))
-    # df_filtered.to_csv('filtered_data.csv', index=False)
-
+    
     # Calculate booking available date
     df_filtered.loc[:, 'Available Booking Date'] = df_filtered['만료일'].apply(lambda x: np.busday_offset(np.datetime64(x, 'D'), 4))
+    df_filtered.to_csv('filtered_data.csv', index=False)
     
     return df_filtered
 
