@@ -52,10 +52,11 @@ def generate_blog_content(df, template_path, video_links_path):
     room_list_5f = ""
     for index, row in df.iterrows():
         room_number = str(row['호수'])
+        room_number_int = int(room_number.replace('호', ''))  # 문자열에서 '호'를 제거하고 정수로 변환
         booking_date = row['Available Booking Date']
         video_link = video_links.get(room_number, "No Video Link Available")
         room_info = f"- {room_number}호 ({booking_date.strftime('%Y-%m-%d')}) : 예약가능 [링크]({video_link})"
-        if int(room_number) < 200:
+        if room_number_int < 200:
             room_list_4f += f"{room_info}\n"
         else:
             room_list_5f += f"{room_info}\n"
