@@ -61,7 +61,7 @@ def generate_blog_content(df, template_path, video_links_path):
         # room_info = f"- {room_number} ({expiry_date.strftime('%Y-%m-%d')}) : 예약가능 [링크]({video_link})"
         room_info = f"- {room_number.ljust(5)}({expiry_date.strftime('%Y-%m-%d')}) : 예약가능 [링크]({video_link})"
         # room_info = f"- {room_number.ljust(6)} ({expiry_date.strftime('%Y-%m-%d')}) : 예약가능 [링크]({video_link})"
-        print(room_info)
+        # print(room_info)
         if 101 <= room_number_int <= 112:  # 101~112호는 4층
             room_list_4f += f"{room_info}\n"
         elif 201 <= room_number_int <= 212:  # 201~212호는 5층
@@ -74,7 +74,7 @@ def generate_blog_content(df, template_path, video_links_path):
     formatted_template = template.replace("[연도다음월]", f"{next_year}년 {next_month}월")
     formatted_template = re.sub(r"\[4층객실번호\]", room_list_4f, formatted_template)
     formatted_template = re.sub(r"\[5층객실번호\]", room_list_5f, formatted_template)
-    # print(formatted_template)
+    print(formatted_template)
 
     # Blog post title
     blog_title = f"24년 {next_month}월 메가스테이 잠실 예약가능객실 안내"
