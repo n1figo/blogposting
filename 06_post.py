@@ -3,7 +3,28 @@ import numpy as np
 import datetime
 
 def read_and_filter_excel(file_path):
-    # 기존 코드 동일
+    # Load the Excel file
+    df = pd.read_excel(file_path, engine='openpyxl')
+
+    # Get current date and calculate previous, current, and next month
+    now = datetime.datetime.now()
+    this_year = now.year
+    this_month = now.month
+    next_month = (now.month % 12) + 1
+    previous_month = now.month - 1 if now.month > 1 else 12
+
+    # Filter data for rooms with contract end dates this year and this month, next month, or last month
+    df['만료일'] = pd.to_datetime(df['만료일'], errors='coerce')
+    df_filtered = df[(df['만료일'].dt.year == this_year) & (df['만료일'].dt.month.isin([previous_month, this_month, next_month]))]
+
+    # Convert non-business days to the next business day
+    df_filtered.loc[:, '만료일'] = df_filtered['만료일'].apply(lambda x: np.busday_offset(np.datetime64(x, 'D'), 0, roll='forward'))
+
+    # Calculate booking available date
+    df_filtered.loc[:, 'Available Booking Date'] = df_filtered['만료일'].apply(lambda x: np.busday_offset(np.datetime64(x, 'D'), 4))
+
+    # Filter the data further to include only contract end dates in the previous, current, and next month
+    df_filtered = df_filtered[df_filtered['만료일'].dt.month.isin([previous_month, this_month, next_month])]
 
     return df_filtered
 
@@ -45,8 +66,8 @@ def generate_blog_content(df, template_path, video_links_path):
 
     # Format blog content
     formatted_template = template.replace("[연도다음월]", f"{next_year}년 {next_month}월")
-    formatted_template = formatted_template.replace("1. 4층 (괄호 안은 만료일)\n\n- [객실번호] (만료일) : 예약가능\n\n", f"1. 4층 (괄호 안은 만료일)\n\n{room_list_4f}\n")
-    formatted_template = formatted_template.replace("2. 5층 (괄호 안은 만료일)\n\n- [객실번호] (만료일) : 예약가능\n\n", f"2. 5층 (괄호 안은 만료일)\n\n{room_list_5f}\n")
+    formatted_template = formatted_template.replace("- [4층객실번호]\n", f"- [4층객실번호]\n{room_list_4f}\n")
+    formatted_template = formatted_template.replace("- [5층객실번호]\n", f"- [5층객실번호]\n{room_list_5f}\n")
 
     # Blog post title
     blog_title = f"24년 {next_month}월 메가스테이 잠실 예약가능객실 안내"
@@ -67,3 +88,6 @@ output_file_path = "output_blog_post.txt"
 filtered_data = read_and_filter_excel(excel_file_path)
 blog_title, blog_content = generate_blog_content(filtered_data, template_file_path, video_links_file_path)
 save_blog_post(blog_title, blog_content, output_file_path)
+
+print("Blog post generated successfully!")
+
