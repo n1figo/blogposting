@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-import datetime
+import datetime, re
 
 def read_and_filter_excel(file_path):
     # Load the Excel file
@@ -58,16 +58,21 @@ def generate_blog_content(df, template_path, video_links_path):
         room_number_int = int(room_number.replace('호', ''))  # 문자열에서 '호'를 제거하고 정수로 변환
         expiry_date = row['만료일']
         video_link = video_links.get(room_number, "No Video Link Available")
-        room_info = f"- {room_number}호 ({expiry_date.strftime('%Y-%m-%d')}) : 예약가능 [링크]({video_link})"
+        room_info = f"- {room_number} ({expiry_date.strftime('%Y-%m-%d')}) : 예약가능 [링크]({video_link})"
+        # print(room_info)
         if 101 <= room_number_int <= 112:  # 101~112호는 4층
             room_list_4f += f"{room_info}\n"
         elif 201 <= room_number_int <= 212:  # 201~212호는 5층
             room_list_5f += f"{room_info}\n"
 
+    # print(room_list_4f)
+    # print(room_list_5f)
     # Format blog content
+     # Format blog content
     formatted_template = template.replace("[연도다음월]", f"{next_year}년 {next_month}월")
-    formatted_template = formatted_template.replace("- [4층객실번호]\n", f"- [4층객실번호]\n{room_list_4f}\n")
-    formatted_template = formatted_template.replace("- [5층객실번호]\n", f"- [5층객실번호]\n{room_list_5f}\n")
+    formatted_template = re.sub(r"\[4층객실번호\]", room_list_4f, formatted_template)
+    formatted_template = re.sub(r"\[5층객실번호\]", room_list_5f, formatted_template)
+    print(formatted_template)
 
     # Blog post title
     blog_title = f"24년 {next_month}월 메가스테이 잠실 예약가능객실 안내"
