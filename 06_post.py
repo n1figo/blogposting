@@ -34,16 +34,15 @@ def generate_blog_content(df, template_path, video_links_path):
         template = file.read()
 
     # Read video links
-    with open(video_links_file_path, 'r', encoding='utf-8') as file:
-        video_links_content = file.readlines()
+    with open(video_links_path, 'r', encoding='utf-8') as file:
+        video_links_content = file.read().split('\n')
+        # print(video_links_content)
         video_links = {}
-        for line in video_links_content:
-            if line.strip() and '*' in line:
-                room_number, video_link = line.split('*', 1)
-                room_number = room_number.strip()
-                video_link = video_link.strip()
-                if video_link and video_link != '-':
-                    video_links[room_number] = video_link
+        for i in range(0, len(video_links_content), 2):
+            room_number = video_links_content[i].strip()
+            video_link = video_links_content[i + 1].strip() if i + 1 < len(video_links_content) else None
+            if video_link and video_link != '-':
+                video_links[room_number] = video_link
 
     # Get current year and next month
     now = datetime.datetime.now()
@@ -55,26 +54,23 @@ def generate_blog_content(df, template_path, video_links_path):
     room_list_5f = ""
     for index, row in df.iterrows():
         room_number = str(row['호수'])
-        room_number_int = int(room_number.replace('호', ''))  # 문자열에서 '호'를 제거하고 정수로 변환
+        room_number_int = int(room_number.replace('호', ''))
         expiry_date = row['만료일']
-        video_link = video_links.get(room_number, "No Video Link Available")
-        # room_info = f"- {room_number} ({expiry_date.strftime('%Y-%m-%d')}) : 예약가능 [링크]({video_link})"
-        room_info = f"- {room_number.ljust(5)}({expiry_date.strftime('%Y-%m-%d')}) : 예약가능 [링크]({video_link})"
-        # room_info = f"- {room_number.ljust(6)} ({expiry_date.strftime('%Y-%m-%d')}) : 예약가능 [링크]({video_link})"
-        # print(room_info)
+        video_link = video_links.get(room_number, None)
+        room_info = f"- {room_number.ljust(5)}({expiry_date.strftime('%Y-%m-%d')}) : 예약가능"
+        if video_link:
+            room_link_info = f"{room_info}\n  [링크]({video_link})"
+        else:
+            room_link_info = f"{room_info}\n  No Video Link Available"
         if 101 <= room_number_int <= 112:  # 101~112호는 4층
-            room_list_4f += f"{room_info}\n"
+            room_list_4f += f"{room_link_info}\n"
         elif 201 <= room_number_int <= 212:  # 201~212호는 5층
-            room_list_5f += f"{room_info}\n"
+            room_list_5f += f"{room_link_info}\n"
 
-    # print(room_list_4f)
-    # print(room_list_5f)
     # Format blog content
-     # Format blog content
     formatted_template = template.replace("[연도다음월]", f"{next_year}년 {next_month}월")
     formatted_template = re.sub(r"\[4층객실번호\]", room_list_4f, formatted_template)
     formatted_template = re.sub(r"\[5층객실번호\]", room_list_5f, formatted_template)
-    print(formatted_template)
 
     # Blog post title
     blog_title = f"24년 {next_month}월 메가스테이 잠실 예약가능객실 안내"
@@ -90,6 +86,7 @@ excel_file_path = "./현황2.xlsx"
 template_file_path = "./게시글템플릿.txt"
 video_links_file_path = "./룸투어링크.txt"
 output_file_path = "output_blog_post.txt"
+
 
 # Step-by-step execution
 filtered_data = read_and_filter_excel(excel_file_path)
